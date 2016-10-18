@@ -1,6 +1,7 @@
 package nl.mjvrijn.matthewvanrijn_pset6;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,27 +40,46 @@ public class GeoCoder {
         }
     }
 
-    public String getBuurtID(double lat, double lon) {
-        String id = null;
+    public void requestBuurtID(double lat, double lon) {
+        Double[] coords = {lat,lon};
 
-        File f = new File(context.getFilesDir(), "buurten.sqlite");
+        new DBTask().execute(coords);
+    }
 
-        try {
-            jsqlite.Database db = new jsqlite.Database();
-            db.open(f.getAbsolutePath(), jsqlite.Constants.SQLITE_OPEN_READWRITE);
+    public class DBTask extends AsyncTask<Double, Integer, String> {
+        @Override
+        protected String doInBackground(Double... params) {
+            String id = null;
+            double latitude = params[0];
+            double longitude = params[1];
 
-            String query = "select bu_code from buurt_2016 where Within(Transform(MakePoint("+lon+","+lat+", 4326), 28992), Geometry)=1;";
-            Stmt statement = db.prepare(query);
+            File f = new File(context.getFilesDir(), "buurten.sqlite");
 
-            while(statement.step()) {
-                id = statement.column_string(0);
+            try {
+                jsqlite.Database db = new jsqlite.Database();
+                db.open(f.getAbsolutePath(), jsqlite.Constants.SQLITE_OPEN_READWRITE);
+
+                String query = "select bu_code from buurt_2016 where Within(Transform(MakePoint("+longitude+","+latitude+", 4326), 28992), Geometry)=1;";
+                Stmt statement = db.prepare(query);
+
+                if (statement.step()) {
+                    id = statement.column_string(0);
+                }
+
+                db.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            db.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+            return id;
         }
 
-        return id;
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            ((MainActivity) context).onDBResult(result);
+        }
     }
+
 }
