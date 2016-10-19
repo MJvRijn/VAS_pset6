@@ -58,8 +58,10 @@ public class Authenticator {
     }
 
     public void signIn(Context c) {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(apiClient);
-        ((MainActivity) c).startActivityForResult(signInIntent, RC_SIGN_IN);
+        if(acct == null) {
+            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(apiClient);
+            ((MainActivity) c).startActivityForResult(signInIntent, RC_SIGN_IN);
+        }
     }
 
     public void completeSignIn(int requestCode, int resultCode, Intent data, Context c) {

@@ -62,6 +62,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         abdt.setDrawerIndicatorEnabled(true);
         drawerLayout.addDrawerListener(abdt);
         abdt.syncState();
+
+
+        //getFragmentManager().beginTransaction().replace(R.id.stats_container, new BevolkingFragment()).commit();
+
     }
 
 

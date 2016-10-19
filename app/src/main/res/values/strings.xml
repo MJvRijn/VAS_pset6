@@ -4,4 +4,7 @@
     <string name="title_activity_authentication">AuthenticationActivity</string>
     <string name="open_drawer">Open navigation drawer</string>
     <string name="close_drawer">Close navigation drawer</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
