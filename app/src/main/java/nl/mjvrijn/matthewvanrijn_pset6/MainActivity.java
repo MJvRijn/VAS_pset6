@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private LocationRequest mLocationRequest;
     private Location mLastLocation;
     private GeoCoder gc;
+    private CBSAPI api;
+    private Buurt currentLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         mLocationRequest.setInterval(100);
 
         gc = new GeoCoder(this);
+        api = new CBSAPI(this);
 
     }
 
@@ -223,7 +226,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         return super.onOptionsItemSelected(item);
     }
 
-    public void onDBResult(String result) {
-        System.out.println(result);
+    public void onDBResult(String id, String name) {
+        if(currentLocation == null || !currentLocation.getId().equals(id)) {
+            currentLocation = new Buurt(id, name);
+            api.getData(currentLocation);
+        }
+    }
+
+    public void updateDisplay() {
+
     }
 }

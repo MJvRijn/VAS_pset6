@@ -46,10 +46,12 @@ public class GeoCoder {
         new DBTask().execute(coords);
     }
 
-    public class DBTask extends AsyncTask<Double, Integer, String> {
+    private class DBTask extends AsyncTask<Double, Integer, String> {
+        private String id;
+        private String name;
+
         @Override
         protected String doInBackground(Double... params) {
-            String id = null;
             double latitude = params[0];
             double longitude = params[1];
 
@@ -59,11 +61,12 @@ public class GeoCoder {
                 jsqlite.Database db = new jsqlite.Database();
                 db.open(f.getAbsolutePath(), jsqlite.Constants.SQLITE_OPEN_READWRITE);
 
-                String query = "select bu_code from buurt_2016 where Within(Transform(MakePoint("+longitude+","+latitude+", 4326), 28992), Geometry)=1;";
+                String query = "select bu_code, bu_naam from buurt_2016 where Within(Transform(MakePoint("+longitude+","+latitude+", 4326), 28992), Geometry)=1;";
                 Stmt statement = db.prepare(query);
 
                 if (statement.step()) {
                     id = statement.column_string(0);
+                    name = statement.column_string(1);
                 }
 
                 db.close();
@@ -71,14 +74,14 @@ public class GeoCoder {
                 e.printStackTrace();
             }
 
-            return id;
+            return null;
         }
 
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-            ((MainActivity) context).onDBResult(result);
+            ((MainActivity) context).onDBResult(id, name);
         }
     }
 
