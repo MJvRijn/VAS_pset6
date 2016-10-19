@@ -5,29 +5,20 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ListView;
 
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener {
 
@@ -45,10 +36,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        setTitle("BuurtStats");
+
         gc = new GeoCoder(this);
         api = new CBSAPI(this);
 
         Authenticator.getInstance().createServices(this);
+
+        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ListView drawer = (ListView) findViewById(R.id.navigation_drawer);
+        FrameLayout fragmentContainer = (FrameLayout) findViewById(R.id.stats_container);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBarDrawerToggle abdt = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_drawer, R.string.close_drawer) {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+            }
+        };
+        abdt.setDrawerIndicatorEnabled(true);
+        drawerLayout.addDrawerListener(abdt);
+        abdt.syncState();
     }
 
 
@@ -58,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         Authenticator.getInstance().connectServices();
         Authenticator.getInstance().signIn(this);
+        updateDisplay();
     }
 
     @Override
@@ -140,7 +154,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     public void updateDisplay() {
-
+        if(currentLocation != null) {
+            setTitle(currentLocation.getName());
+        }
     }
 
     @Override
