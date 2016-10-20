@@ -1,6 +1,8 @@
 package nl.mjvrijn.matthewvanrijn_pset6;
 
-public class Buurt {
+import java.io.Serializable;
+
+public class Buurt implements Serializable {
     private String id;
     private String name;
     private Demographics demographics;

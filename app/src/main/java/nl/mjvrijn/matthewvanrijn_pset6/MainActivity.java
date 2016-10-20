@@ -3,6 +3,7 @@ package nl.mjvrijn.matthewvanrijn_pset6;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
@@ -70,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     }
 
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -99,6 +99,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        System.out.println("Saving state");
+        outState.putSerializable("currentLocation", currentLocation);
+        outState.putParcelable("location", mLastLocation);
+        super.onSaveInstanceState(outState);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        System.out.println("Restoring state");
+        currentLocation = (Buurt) savedInstanceState.getSerializable("currentLocation");
+        mLastLocation = savedInstanceState.getParcelable("location");
+        updateDisplay();
+
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
 
@@ -123,17 +142,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         if(mLastLocation == null) {
             mLastLocation = location;
             gc.requestBuurtID(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+        } else {
+            double distance = Math.sqrt(Math.pow(mLastLocation.getLatitude() - location.getLatitude(), 2) +
+                    Math.pow(mLastLocation.getLongitude() - location.getLongitude(), 2));
+
+            System.out.println(distance);
+            if(distance > 0.0001) {
+                mLastLocation = location;
+
+                gc.requestBuurtID(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+            }
         }
 
-        double distance = Math.sqrt(Math.pow(mLastLocation.getLatitude() - location.getLatitude(), 2) +
-                Math.pow(mLastLocation.getLongitude() - location.getLongitude(), 2));
-
-        System.out.println(distance);
-        if(distance > 0.0001) {
-            mLastLocation = location;
-
-            gc.requestBuurtID(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-        }
     }
 
     @Override
