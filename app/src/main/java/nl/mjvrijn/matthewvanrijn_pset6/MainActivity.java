@@ -1,6 +1,7 @@
 package nl.mjvrijn.matthewvanrijn_pset6;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -13,6 +14,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 
@@ -21,16 +24,24 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener {
 
     private static final String TAG = "MainActivity";
 
     private DemographicsFragment demographicsFragment;
+    private HousingFragment housingFragment;
 
     private Location mLastLocation;
     private GeoCoder gc;
     private CBSAPI api;
     private Buurt currentLocation;
+    private int currentPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,13 +52,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         setTitle("BuurtStats");
 
+        loadState();
+
         gc = new GeoCoder(this);
         api = new CBSAPI(this);
 
         Authenticator.getInstance().createServices(this);
 
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ListView drawer = (ListView) findViewById(R.id.navigation_drawer);
+        final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final ListView drawer = (ListView) findViewById(R.id.navigation_drawer);
         FrameLayout fragmentContainer = (FrameLayout) findViewById(R.id.stats_container);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -66,22 +79,51 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         drawerLayout.addDrawerListener(abdt);
         abdt.syncState();
 
-        demographicsFragment = new DemographicsFragment();
-        getFragmentManager().beginTransaction().replace(R.id.stats_container, demographicsFragment).commit();
+        String[] pages = {"Bevolking", "Wonen"};
+        drawer.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_adapter, pages));
 
+        drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                currentPage = position;
+                updateFragment();
+                drawerLayout.closeDrawers();
+            }
+        });
+
+        demographicsFragment = new DemographicsFragment();
+        housingFragment = new HousingFragment();
+        getFragmentManager().beginTransaction().add(R.id.stats_container, demographicsFragment).commit();
+        getFragmentManager().beginTransaction().add(R.id.stats_container, housingFragment).commit();
+
+        updateDisplay();
+        updateFragment();
+    }
+
+    private void updateFragment() {
+        switch(currentPage) {
+            case 0: getFragmentManager().beginTransaction().show(demographicsFragment).commit();
+                getFragmentManager().beginTransaction().hide(housingFragment).commit();
+                break;
+            case 1: getFragmentManager().beginTransaction().hide(demographicsFragment).commit();
+                getFragmentManager().beginTransaction().show(housingFragment).commit();
+                break;
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
+
         Authenticator.getInstance().connectServices();
-        Authenticator.getInstance().signIn(this);
+        Authenticator.getInstance().restoreSignIn();
         updateDisplay();
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        System.out.println("OnConnected");
         LocationRequest locReq = LocationRequest.create();
         locReq.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         locReq.setInterval(100);
@@ -122,6 +164,38 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         super.onStop();
 
         Authenticator.getInstance().disconnectServices();
+        saveState();
+    }
+
+    private void saveState() {
+        SharedPreferences.Editor editor = getSharedPreferences("storage", MODE_PRIVATE).edit();
+        editor.putInt("currentPage", currentPage);
+        editor.apply();
+
+        try {
+            FileOutputStream fos = this.openFileOutput("buurt", MODE_PRIVATE);
+            ObjectOutputStream os = new ObjectOutputStream(fos);
+            os.writeObject(currentLocation);
+            os.close();
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadState() {
+        SharedPreferences prefs = getSharedPreferences("storage", MODE_PRIVATE);
+        currentPage = prefs.getInt("currentPage", 0);
+
+        try {
+            FileInputStream fis = this.openFileInput("buurt");
+            ObjectInputStream is = new ObjectInputStream(fis);
+            currentLocation = (Buurt) is.readObject();
+            is.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -165,6 +239,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
@@ -185,12 +261,5 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             demographicsFragment.setData(currentLocation);
         }
 
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        Authenticator.getInstance().completeSignIn(requestCode, resultCode, data, this);
     }
 }

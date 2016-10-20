@@ -1,8 +1,10 @@
 package nl.mjvrijn.matthewvanrijn_pset6;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -11,6 +13,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -53,14 +58,37 @@ public class Authenticator {
     }
 
     public static Authenticator getInstance() {
-        System.out.println(instance.toString());
         return instance;
     }
 
-    public void signIn(Context c) {
+    public void restoreSignIn() {
+        if(acct == null) {
+            OptionalPendingResult<GoogleSignInResult> pendingResult = Auth.GoogleSignInApi.silentSignIn(apiClient);
+
+            if(pendingResult.isDone()) {
+                GoogleSignInResult result = pendingResult.get();
+                if(result.isSuccess()) {
+                    acct = result.getSignInAccount();
+                    System.out.println("Signed in as " + acct.getDisplayName() + " immediately.");
+                }
+            } else {
+                pendingResult.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                    @Override
+                    public void onResult(@NonNull GoogleSignInResult result) {
+                        if(result.isSuccess()) {
+                            acct = result.getSignInAccount();
+                            System.out.println("Signed in as " + acct.getDisplayName() + " after wait.");
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    public void signIn(final Context c) {
         if(acct == null) {
             Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(apiClient);
-            ((MainActivity) c).startActivityForResult(signInIntent, RC_SIGN_IN);
+            ((AppCompatActivity) c).startActivityForResult(signInIntent, RC_SIGN_IN);
         }
     }
 
@@ -80,8 +108,8 @@ public class Authenticator {
         }
     }
 
-    public void signOut() {
-
+    public void signOut(Context c) {
+        //Auth.GoogleSignInApi.signOut(apiClient).setResultCallback((SettingsActivity) c);
     }
 
     public void createServices(Context c) {
@@ -96,16 +124,22 @@ public class Authenticator {
                 .addApi(LocationServices.API)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+
+        Log.d(TAG, "Services created");
     }
 
     public void connectServices() {
         apiClient.connect();
         fbAuth.addAuthStateListener(fbAuthListener);
+
+        Log.d(TAG, "Services Connected");
     }
 
     public void disconnectServices() {
         apiClient.disconnect();
         fbAuth.removeAuthStateListener(fbAuthListener);
+
+        Log.d(TAG, "Services Disconnected");
     }
 
     private void connectFirebase(Context c) {
@@ -128,5 +162,9 @@ public class Authenticator {
 
     public GoogleApiClient getApiClient() {
         return apiClient;
+    }
+
+    public GoogleSignInAccount getAccount() {
+        return acct;
     }
 }

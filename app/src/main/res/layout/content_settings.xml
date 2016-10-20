@@ -9,8 +9,40 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:gravity="center_horizontal"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="nl.mjvrijn.matthewvanrijn_pset6.SettingsActivity"
     tools:showIn="@layout/activity_settings">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:id="@+id/settings_login_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/settings_sign_in"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/settings_sign_out"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign Out" />
+
+    </LinearLayout>
+
+
+
+
 
 </RelativeLayout>
