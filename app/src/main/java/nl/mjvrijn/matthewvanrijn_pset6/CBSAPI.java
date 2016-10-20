@@ -7,13 +7,20 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CBSAPI {
     private static final String TAG = "CBSAPI";
     private static final String ID_2016 = "83487NED";
+    private static final String ID_2015 = "83220NED";
+    private static final String ID_2014 = "82931NED";
+    private static final String[] DATA_DEMOGRAPHICS_2016 = {"AantalInwoners_5", "Mannen_6", "Vrouwen_7",
+            "k_0Tot15Jaar_8", "k_15Tot25Jaar_9", "k_25Tot45Jaar_10", "k_45Tot65Jaar_11",
+            "k_65JaarOfOuder_12", "Ongehuwd_13", "Gehuwd_14", "Gescheiden_15", "Verweduwd_16",
+            "HuishoudensTotaal_28"};
+    private static final String[] DATA_DEMOGRAPHICS_2015 = {"GeboorteTotaal_24", "SterfteTotaal_26"};
 
     private Context context;
 
@@ -25,10 +32,22 @@ public class CBSAPI {
         new CBSTask().execute(b);
     }
 
-    private void parseJson(String json, Buurt b) {
+    private void parseJson(ArrayList<String> json, Buurt b) {
         try {
-            System.out.println(json);
-            JSONObject jso = new JSONObject(json);
+            JSONObject data2016 = new JSONObject(json.get(0)).getJSONArray("value").getJSONObject(0);
+            JSONObject data2015 = new JSONObject(json.get(1)).getJSONArray("value").getJSONObject(0);
+            JSONObject data2014 = new JSONObject(json.get(2)).getJSONArray("value").getJSONObject(0);
+
+            // Parse demographic data
+            ArrayList<String> demographics = new ArrayList<>();
+            for(String s : DATA_DEMOGRAPHICS_2016) {
+                demographics.add(data2016.getString(s));
+            }
+            for(String s : DATA_DEMOGRAPHICS_2015) {
+                demographics.add(data2015.getString(s));
+            }
+            b.setDemographics(new Demographics(demographics));
+            System.out.println(demographics);
 
         } catch (JSONException e) {
             Log.e(TAG, "Data retrieved from server is not valid JSON.");
@@ -40,15 +59,21 @@ public class CBSAPI {
 
     private class CBSTask extends AsyncTask<Buurt, Integer, String> {
         private Buurt buurt;
+        private ArrayList<String> responses = new ArrayList<>();
 
         @Override
         protected String doInBackground(Buurt... params) {
             try {
                 buurt = params[0];
-                String url = String.format("http://opendata.cbs.nl/ODataApi/odata/83487NED/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", buurt.getId());
+                String[] urls = new String[3];
+                urls[0] = String.format("http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", ID_2016, buurt.getId());
+                urls[1] = String.format("http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", ID_2015, buurt.getId());
+                urls[2] = String.format("http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", ID_2014, buurt.getId());
 
-                Scanner s = new Scanner(new URL(url).openStream()).useDelimiter("\\A");
-                return s.hasNext() ? s.next() : "";
+                for(String url : urls) {
+                    Scanner s = new Scanner(new URL(url).openStream()).useDelimiter("\\A");
+                    responses.add(s.hasNext() ? s.next() : "");
+                }
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -60,7 +85,7 @@ public class CBSAPI {
         protected void onPostExecute(String json) {
             super.onPostExecute(json);
 
-            parseJson(json, buurt);
+            parseJson(responses, buurt);
         }
     }
 }

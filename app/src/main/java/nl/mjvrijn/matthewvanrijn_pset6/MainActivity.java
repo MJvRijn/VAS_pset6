@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     private static final String TAG = "MainActivity";
 
+    private DemographicsFragment demographicsFragment;
+
     private Location mLastLocation;
     private GeoCoder gc;
     private CBSAPI api;
@@ -63,8 +65,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         drawerLayout.addDrawerListener(abdt);
         abdt.syncState();
 
-
-        //getFragmentManager().beginTransaction().replace(R.id.stats_container, new BevolkingFragment()).commit();
+        demographicsFragment = new DemographicsFragment();
+        getFragmentManager().beginTransaction().replace(R.id.stats_container, demographicsFragment).commit();
 
     }
 
@@ -160,7 +162,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     public void updateDisplay() {
         if(currentLocation != null) {
             setTitle(currentLocation.getName());
+            demographicsFragment.setData(currentLocation);
         }
+
     }
 
     @Override
