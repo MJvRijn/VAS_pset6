@@ -1,19 +1,20 @@
 package nl.mjvrijn.matthewvanrijn_pset6;
 
 import java.io.Serializable;
+import java.util.Map;
 
 public class Buurt implements Serializable {
-    private String id;
+    private Map<String, String> id;
     private String name;
     private Demographics demographics;
 
-    public Buurt(String i, String n) {
+    public Buurt(Map<String, String> i, String n) {
         id = i;
         name = n;
     }
 
-    public String getId() {
-        return id;
+    public String getId(String year) {
+        return id.get(year);
     }
 
     public String getName() {

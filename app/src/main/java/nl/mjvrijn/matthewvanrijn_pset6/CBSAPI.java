@@ -35,6 +35,7 @@ public class CBSAPI {
     private void parseJson(ArrayList<String> json, Buurt b) {
         try {
             JSONObject data2016 = new JSONObject(json.get(0)).getJSONArray("value").getJSONObject(0);
+            System.out.println(json.get(1));
             JSONObject data2015 = new JSONObject(json.get(1)).getJSONArray("value").getJSONObject(0);
             JSONObject data2014 = new JSONObject(json.get(2)).getJSONArray("value").getJSONObject(0);
 
@@ -66,9 +67,9 @@ public class CBSAPI {
             try {
                 buurt = params[0];
                 String[] urls = new String[3];
-                urls[0] = String.format("http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", ID_2016, buurt.getId());
-                urls[1] = String.format("http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", ID_2015, buurt.getId());
-                urls[2] = String.format("http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", ID_2014, buurt.getId());
+                urls[0] = String.format("http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", ID_2016, buurt.getId("2016"));
+                urls[1] = String.format("http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", ID_2015, buurt.getId("2015"));
+                urls[2] = String.format("http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'", ID_2014, buurt.getId("2014"));
 
                 for(String url : urls) {
                     Scanner s = new Scanner(new URL(url).openStream()).useDelimiter("\\A");

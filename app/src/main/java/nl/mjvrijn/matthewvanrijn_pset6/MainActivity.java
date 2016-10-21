@@ -29,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener {
 
@@ -213,6 +214,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     @Override
     public void onLocationChanged(Location location) {
+        location = new Location("");
+        location.setLatitude(52.3544d);
+        location.setLongitude(4.955d);
+
         if(mLastLocation == null) {
             mLastLocation = location;
             gc.requestBuurtID(mLastLocation.getLatitude(), mLastLocation.getLongitude());
@@ -248,8 +253,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
 
-    public void onDBResult(String id, String name) {
-        if(currentLocation == null || !currentLocation.getId().equals(id)) {
+    public void onDBResult(Map<String, String> id, String name) {
+        if(currentLocation == null || !currentLocation.getName().equals(name)) {
             currentLocation = new Buurt(id, name);
             api.getData(currentLocation);
         }
