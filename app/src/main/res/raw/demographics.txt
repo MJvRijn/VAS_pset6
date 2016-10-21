@@ -1,0 +1,118 @@
+<h2>Inwonersaantallen</h2>
+    <table>
+        <tr>
+            <td>
+                <b>Inwoners:</b>
+            </td>
+            <td>%d</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <b>Mannen:</b>
+            </td>
+            <td>%d</td>
+            <td>(%.1f%%)</td>
+        </tr>
+        <tr>
+            <td>
+                <b>Vrouwen:</b>
+            </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>0-15:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>15-25:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>25-45:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>45-65:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>65+:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+</table>
+
+<h2>Veranderingen</h2>
+
+<table>
+    <tr>
+        <td>
+            <b>Geboorte:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f&nbsp;per&nbsp;1000)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Sterfte:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f&nbsp;per&nbsp;1000)</td>
+    </tr>
+</table>
+
+<h2>Huishoudens</h2>
+
+<table>
+    <tr>
+        <td>
+            <b>Ongehuwd:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Gehuwd:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Verweduwd:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Huishoudens:</b>
+        </td>
+        <td>%d</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>
+            <b>Gem.&nbsp;Huishoudengrootte:</b>
+        </td>
+        <td>%.1f</td>
+        <td></td>
+    </tr>
+</table>

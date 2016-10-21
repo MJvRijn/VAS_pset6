@@ -216,9 +216,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     @Override
     public void onLocationChanged(Location location) {
-        location = new Location("");
-        location.setLatitude(52.3544d);
-        location.setLongitude(4.955d);
+//        location = new Location("");
+//        location.setLatitude(52.3544d);
+//        location.setLongitude(4.955d);
 
         double distance;
         if(mLastLocation != null) {
@@ -234,8 +234,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             //gc.requestBuurtID(mLastLocation.getLatitude(), mLastLocation.getLongitude());
             new APIManager().getBuurtfromLocation(location, new APIListener() {
                 @Override
-                public void onAPIResult(JSONObject b) {
-                    System.out.println("Callback");
+                public void onAPIResult(JSONObject result) {
+                    demographicsFragment.setData(result);
                 }
             });
         }
@@ -270,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     public void updateDisplay() {
         if(currentLocation != null) {
             setTitle(currentLocation.getName());
-            demographicsFragment.setData(currentLocation);
+            //demographicsFragment.setData(currentLocation);
         }
 
     }
