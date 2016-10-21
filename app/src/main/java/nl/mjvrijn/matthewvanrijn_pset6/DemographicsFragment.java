@@ -44,13 +44,8 @@ public class DemographicsFragment extends Fragment {
             template = s.hasNext() ? s.next() : "";
         }
 
-        System.out.println(template);
-
-        StringBuilder sb = new StringBuilder();
-        Formatter formatter = new Formatter(sb, Locale.ENGLISH);
-
         try {
-            formatter.format(template,
+            html = String.format(template,
                     // Population
                     json.getInt("AantalInwoners_5"),
                     json.getInt("Mannen_6"),
@@ -81,7 +76,6 @@ public class DemographicsFragment extends Fragment {
                     json.getDouble("GemiddeldeHuishoudensgrootte_32")
             );
 
-            html = sb.toString();
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -24,6 +24,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileInputStream;
@@ -39,12 +40,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     private DemographicsFragment demographicsFragment;
     private HousingFragment housingFragment;
-
-    private Location mLastLocation;
-    private GeoCoder gc;
-    private CBSAPI api;
-    private Buurt currentLocation;
     private int currentPage;
+
+    private Location lastLocation;
+    private JSONObject currentData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,16 +54,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         setTitle("BuurtStats");
 
-        loadState();
-
-        gc = new GeoCoder(this);
-        api = new CBSAPI(this);
-
         Authenticator.getInstance().createServices(this);
 
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ListView drawer = (ListView) findViewById(R.id.navigation_drawer);
-        FrameLayout fragmentContainer = (FrameLayout) findViewById(R.id.stats_container);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ActionBarDrawerToggle abdt = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_drawer, R.string.close_drawer) {
@@ -99,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         getFragmentManager().beginTransaction().add(R.id.stats_container, demographicsFragment).commit();
         getFragmentManager().beginTransaction().add(R.id.stats_container, housingFragment).commit();
 
-        updateDisplay();
         updateFragment();
     }
 
@@ -118,10 +110,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     protected void onStart() {
         super.onStart();
 
-
+        loadState();
         Authenticator.getInstance().connectServices();
         Authenticator.getInstance().restoreSignIn();
-        updateDisplay();
     }
 
     @Override
@@ -144,46 +135,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        System.out.println("Saving state");
-        outState.putSerializable("currentLocation", currentLocation);
-        outState.putParcelable("location", mLastLocation);
-        super.onSaveInstanceState(outState);
-
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        System.out.println("Restoring state");
-        currentLocation = (Buurt) savedInstanceState.getSerializable("currentLocation");
-        mLastLocation = savedInstanceState.getParcelable("location");
-        updateDisplay();
-
-        super.onRestoreInstanceState(savedInstanceState);
-    }
-
-    @Override
     protected void onStop() {
-        super.onStop();
-
         Authenticator.getInstance().disconnectServices();
         saveState();
+
+        super.onStop();
     }
 
     private void saveState() {
         SharedPreferences.Editor editor = getSharedPreferences("storage", MODE_PRIVATE).edit();
         editor.putInt("currentPage", currentPage);
+        editor.putString("data", currentData.toString());
         editor.apply();
 
-        try {
-            FileOutputStream fos = this.openFileOutput("buurt", MODE_PRIVATE);
-            ObjectOutputStream os = new ObjectOutputStream(fos);
-            os.writeObject(currentLocation);
-            os.close();
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void loadState() {
@@ -191,14 +155,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         currentPage = prefs.getInt("currentPage", 0);
 
         try {
-            FileInputStream fis = this.openFileInput("buurt");
-            ObjectInputStream is = new ObjectInputStream(fis);
-            currentLocation = (Buurt) is.readObject();
-            is.close();
-            fis.close();
+            currentData = new JSONObject(prefs.getString("data", null));
+            updateData();
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     @Override
@@ -221,57 +183,43 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 //        location.setLongitude(4.955d);
 
         double distance;
-        if(mLastLocation != null) {
-            distance = Math.sqrt(Math.pow(mLastLocation.getLatitude() - location.getLatitude(), 2) +
-                    Math.pow(mLastLocation.getLongitude() - location.getLongitude(), 2));
+        if(lastLocation != null) {
+            distance = Math.sqrt(Math.pow(lastLocation.getLatitude() - location.getLatitude(), 2) +
+                    Math.pow(lastLocation.getLongitude() - location.getLongitude(), 2));
         } else {
             distance = 1;
         }
 
         if(distance > 0.0001) {
-            mLastLocation = location;
+            lastLocation = location;
 
-            //gc.requestBuurtID(mLastLocation.getLatitude(), mLastLocation.getLongitude());
             new APIManager().getBuurtfromLocation(location, new APIListener() {
                 @Override
                 public void onAPIResult(JSONObject result) {
+                    currentData = result;
                     demographicsFragment.setData(result);
+                    updateData();
                 }
             });
         }
+    }
 
+    private void updateData() {
+        if(currentData != null) {
+            setTitle("Bob");
+            demographicsFragment.setData(currentData);
+            //housingFragment.setData(currentData);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (item.getItemId() == R.id.action_settings) {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-
-    public void onDBResult(Map<String, String> id, String name) {
-        if(currentLocation == null || !currentLocation.getName().equals(name)) {
-            currentLocation = new Buurt(id, name);
-            api.getData(currentLocation);
-        }
-    }
-
-    public void updateDisplay() {
-        if(currentLocation != null) {
-            setTitle(currentLocation.getName());
-            //demographicsFragment.setData(currentLocation);
-        }
-
     }
 }
