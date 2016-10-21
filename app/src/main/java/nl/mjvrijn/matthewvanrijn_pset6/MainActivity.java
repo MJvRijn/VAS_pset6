@@ -206,7 +206,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     private void updateData() {
         if(currentData != null) {
-            setTitle("Bob");
+            try {
+                String title = String.format("%s, %s", currentData.getString("name"), currentData.getString("city"));
+                setTitle(title);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
             demographicsFragment.setData(currentData);
             //housingFragment.setData(currentData);
         }

@@ -132,6 +132,13 @@ public class APIManager {
                 }
 
                 result = json_2016;
+                try {
+                    result.put("name", geolocator.getString("name"));
+                    result.put("city", geolocator.getString("city"));
+                } catch (JSONException e) {
+                    Log.e(TAG, "Failed to add location info");
+                    return 1;
+                }
             }
 
             return 0;
