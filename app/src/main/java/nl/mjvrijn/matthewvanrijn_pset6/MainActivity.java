@@ -24,6 +24,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import org.json.JSONObject;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -218,19 +220,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         location.setLatitude(52.3544d);
         location.setLongitude(4.955d);
 
-        if(mLastLocation == null) {
-            mLastLocation = location;
-            gc.requestBuurtID(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-        } else {
-            double distance = Math.sqrt(Math.pow(mLastLocation.getLatitude() - location.getLatitude(), 2) +
+        double distance;
+        if(mLastLocation != null) {
+            distance = Math.sqrt(Math.pow(mLastLocation.getLatitude() - location.getLatitude(), 2) +
                     Math.pow(mLastLocation.getLongitude() - location.getLongitude(), 2));
+        } else {
+            distance = 1;
+        }
 
-            System.out.println(distance);
-            if(distance > 0.0001) {
-                mLastLocation = location;
+        if(distance > 0.0001) {
+            mLastLocation = location;
 
-                gc.requestBuurtID(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-            }
+            //gc.requestBuurtID(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+            new APIManager().getBuurtfromLocation(location, new APIListener() {
+                @Override
+                public void onAPIResult(JSONObject b) {
+                    System.out.println("Callback");
+                }
+            });
         }
 
     }
