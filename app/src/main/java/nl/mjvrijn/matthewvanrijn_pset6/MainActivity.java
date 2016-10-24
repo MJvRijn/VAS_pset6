@@ -21,15 +21,18 @@ import android.widget.ListView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+
+    private GoogleApiClient apiClient;
 
     private StatsFragment[] fragments;
     private int currentFragment;
@@ -45,8 +48,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         setSupportActionBar(toolbar);
 
         setTitle("BuurtStats");
-
-        Authenticator.getInstance().createServices(this);
 
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ListView drawer = (ListView) findViewById(R.id.navigation_drawer);
@@ -87,6 +88,46 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         for(StatsFragment f : fragments) {
             fm.beginTransaction().add(R.id.stats_container, f).commit();
         }
+
+        setUpLocationServices();
+    }
+
+    private void setUpLocationServices() {
+        apiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                        Log.w(TAG, "Connection to google location API failed.");
+                    }
+                })
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(@Nullable Bundle bundle) {
+                        Log.i(TAG, "Connected to google location API.");
+
+                        LocationRequest locReq = LocationRequest.create();
+                        locReq.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+                        locReq.setInterval(100);
+
+                        try { //todo: request permission
+                            LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locReq, new LocationListener() {
+                                @Override
+                                public void onLocationChanged(Location l) {
+                                    processLocationUpdate(l);
+                                }
+                            });
+                        } catch(SecurityException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onConnectionSuspended(int i) {
+                        Log.w(TAG, "Connection to google location API suspended.");
+                    }
+                })
+                .addApi(LocationServices.API)
+                .build();
     }
 
     private void updateFragment() {
@@ -101,41 +142,45 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     }
 
+    private void processLocationUpdate(Location l) {
+
+        double distance;
+        if(lastLocation != null) {
+            distance = Math.sqrt(Math.pow(lastLocation.getLatitude() - l.getLatitude(), 2) +
+                    Math.pow(lastLocation.getLongitude() - l.getLongitude(), 2));
+        } else {
+            distance = 1;
+        }
+
+        Log.i(TAG, "Received location update. Lat: " + l.getLatitude() + " Lon: " + l.getLongitude() + " Distance: " + distance);
+
+        if(distance > 0.0001) {
+            lastLocation = l;
+
+            new APIManager().getBuurtfromLocation(l, new APIListener() {
+                @Override
+                public void onAPIResult(JSONObject result) {
+                    currentData = result;
+                    updateData();
+                }
+            });
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
 
         loadState();
         updateFragment();
-        Authenticator.getInstance().connectServices();
-        Authenticator.getInstance().restoreSignIn();
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        System.out.println("OnConnected");
-        LocationRequest locReq = LocationRequest.create();
-        locReq.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        locReq.setInterval(100);
-
-        try { //todo: request permission
-            LocationServices.FusedLocationApi.requestLocationUpdates(Authenticator.getInstance().getApiClient(), locReq, this);
-        } catch(SecurityException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
     }
 
     @Override
     protected void onStop() {
-        Authenticator.getInstance().disconnectServices();
+        super.onStop();
+
         saveState();
 
-        super.onStop();
     }
 
     private void saveState() {
@@ -169,43 +214,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        System.out.println("Google API connection failed");
-        System.out.println(connectionResult.getErrorCode());
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-//        location = new Location("");
-//        location.setLatitude(52.3544d);
-//        location.setLongitude(4.955d);
-
-        double distance;
-        if(lastLocation != null) {
-            distance = Math.sqrt(Math.pow(lastLocation.getLatitude() - location.getLatitude(), 2) +
-                    Math.pow(lastLocation.getLongitude() - location.getLongitude(), 2));
-        } else {
-            distance = 1;
-        }
-
-        if(distance > 0.0001) {
-            lastLocation = location;
-
-            new APIManager().getBuurtfromLocation(location, new APIListener() {
-                @Override
-                public void onAPIResult(JSONObject result) {
-                    currentData = result;
-                    updateData();
-                }
-            });
-        }
     }
 
     private void updateData() {
