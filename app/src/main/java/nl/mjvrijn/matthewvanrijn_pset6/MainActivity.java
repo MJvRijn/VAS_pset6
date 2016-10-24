@@ -4,9 +4,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -27,20 +26,12 @@ import com.google.android.gms.location.LocationServices;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Map;
-
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener {
 
     private static final String TAG = "MainActivity";
 
-    private DemographicsFragment demographicsFragment;
-    private HousingFragment housingFragment;
-    private int currentPage;
+    private StatsFragment[] fragments;
+    private int currentFragment;
 
     private Location lastLocation;
     private JSONObject currentData;
@@ -81,28 +72,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                currentPage = position;
+                currentFragment = position;
                 updateFragment();
                 drawerLayout.closeDrawers();
             }
         });
 
-        demographicsFragment = new DemographicsFragment();
-        housingFragment = new HousingFragment();
-        getFragmentManager().beginTransaction().add(R.id.stats_container, demographicsFragment).commit();
-        getFragmentManager().beginTransaction().add(R.id.stats_container, housingFragment).commit();
+        fragments = new StatsFragment[1];
+        fragments[0] = new DemographicsFragment();
 
+        FragmentManager fm = getFragmentManager();
+        for(StatsFragment f : fragments) {
+            fm.beginTransaction().add(R.id.stats_container, f).commit();
+        }
         updateFragment();
     }
 
     private void updateFragment() {
-        switch(currentPage) {
-            case 0: getFragmentManager().beginTransaction().show(demographicsFragment).commit();
-                getFragmentManager().beginTransaction().hide(housingFragment).commit();
-                break;
-            case 1: getFragmentManager().beginTransaction().hide(demographicsFragment).commit();
-                getFragmentManager().beginTransaction().show(housingFragment).commit();
-                break;
+        FragmentManager fm = getFragmentManager();
+
+        for(int i = 0; i < fragments.length; i++) {
+            if(i == currentFragment) {
+                fm.beginTransaction().show(fragments[i]).commit();
+            } else {
+                fm.beginTransaction().hide(fragments[i]).commit();
+            }
         }
     }
 
@@ -144,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     private void saveState() {
         SharedPreferences.Editor editor = getSharedPreferences("storage", MODE_PRIVATE).edit();
-        editor.putInt("currentPage", currentPage);
+        editor.putInt("currentFragment", currentFragment);
         editor.putString("data", currentData.toString());
         editor.apply();
 
@@ -152,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     private void loadState() {
         SharedPreferences prefs = getSharedPreferences("storage", MODE_PRIVATE);
-        currentPage = prefs.getInt("currentPage", 0);
+        currentFragment = prefs.getInt("currentFragment", 0);
 
         try {
             currentData = new JSONObject(prefs.getString("data", null));
@@ -197,7 +191,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 @Override
                 public void onAPIResult(JSONObject result) {
                     currentData = result;
-                    demographicsFragment.setData(result);
                     updateData();
                 }
             });
@@ -213,8 +206,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 e.printStackTrace();
             }
 
-            demographicsFragment.setData(currentData);
-            //housingFragment.setData(currentData);
+            for(StatsFragment f : fragments) {
+                f.setData(currentData);
+            }
         }
     }
 

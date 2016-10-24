@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="nl.mjvrijn.matthewvanrijn_pset6.DemographicsFragment">
+    tools:context="nl.mjvrijn.matthewvanrijn_pset6.StatsFragment">
 
     <WebView
-        android:id="@+id/demographics_webview"
+        android:id="@+id/fragment_webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

@@ -1,52 +1,30 @@
 package nl.mjvrijn.matthewvanrijn_pset6;
 
-import android.graphics.Color;
-import android.os.Bundle;
-import android.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.WebView;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
-import java.net.URL;
-import java.util.Formatter;
-import java.util.Locale;
 import java.util.Scanner;
 
-public class DemographicsFragment extends Fragment {
-    private WebView webView;
+/**
+ * Created by matthew on 24-10-16.
+ */
 
-    private String template;
-    private String html;
+public class DemographicsFragment extends StatsFragment {
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_demographics, container, false);
-
-        webView = (WebView) view.findViewById(R.id.demographics_webview);
-        webView.setBackgroundColor(Color.TRANSPARENT);
-
-        if(html != null) {
-            webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
-        }
-
-        return view;
+    protected void readTemplate() {
+        InputStream is = getResources().openRawResource(R.raw.demographics);
+        Scanner s = new Scanner(is).useDelimiter("\\A");
+        template = s.hasNext() ? s.next() : "";
     }
 
     public void setData(JSONObject json) {
         if(template == null) {
-            InputStream is = getResources().openRawResource(R.raw.demographics);
-            Scanner s = new Scanner(is).useDelimiter("\\A");
-            template = s.hasNext() ? s.next() : "";
+            readTemplate();
         }
 
         try {
             html = String.format(template,
-                    // Population
                     json.getInt("AantalInwoners_5"),
                     json.getInt("Mannen_6"),
                     ((double) json.getInt("Mannen_6")/json.getInt("AantalInwoners_5")) * 100,
@@ -83,7 +61,5 @@ public class DemographicsFragment extends Fragment {
         if(webView != null) {
             webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
         }
-
-
     }
 }
