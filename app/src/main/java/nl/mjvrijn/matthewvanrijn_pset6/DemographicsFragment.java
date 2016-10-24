@@ -6,10 +6,6 @@ import org.json.JSONObject;
 import java.io.InputStream;
 import java.util.Scanner;
 
-/**
- * Created by matthew on 24-10-16.
- */
-
 public class DemographicsFragment extends StatsFragment {
 
     protected void readTemplate() {
@@ -51,7 +47,8 @@ public class DemographicsFragment extends StatsFragment {
                     json.getInt("Verweduwd_16"),
                     ((double) json.getInt("Verweduwd_16")/json.getInt("AantalInwoners_5")) * 100,
                     json.getInt("HuishoudensTotaal_28"),
-                    json.getDouble("GemiddeldeHuishoudensgrootte_32")
+                    json.getDouble("GemiddeldeHuishoudensgrootte_32"),
+                    json.getInt("Bevolkingsdichtheid_33")
             );
 
         } catch (JSONException e) {

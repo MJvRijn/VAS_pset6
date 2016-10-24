@@ -150,6 +150,7 @@ public class APIManager {
             locked = false;
 
             if(integer == 0) {
+                Log.d(TAG, result.toString());
                 callback.onAPIResult(result);
             }
 

@@ -115,4 +115,11 @@
         <td>%.1f</td>
         <td></td>
     </tr>
+    <tr>
+        <td>
+            <b>Bevolkingsdichtheid:</b>
+        </td>
+        <td>%d/km²</td>
+        <td></td>
+    </tr>
 </table>

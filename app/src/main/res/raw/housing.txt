@@ -1,0 +1,75 @@
+<h2>Woningen</h2>
+
+<table>
+    <tr>
+        <td>
+            <b>Aantal woningen:</b>
+        </td>
+        <td>%d</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Gem. Woningwaarde:</b>
+        </td>
+        <td>€%d</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Huur:</b>
+        </td>
+    <td>%d%%</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Koop:</b>
+        </td>
+        <td>%d%%</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Bouwjaar voor 2000:</b>
+        </td>
+        <td>%d%%</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Bouwjaar na 2000:</b>
+        </td>
+        <td>%d%%</td>
+    </tr>
+</table>
+
+<h2>Voorzieningen</h2>
+
+<table>
+    <tr>
+        <td>
+            <b>Gem. afstand tot huisarts:</b>
+        </td>
+        <td>%.1fkm</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Gem. afstand tot supermarkt:</b>
+        </td>
+        <td>%.1fkm</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Gem. afstand tot kinderdagverblijf:</b>
+        </td>
+        <td>%.1fkm</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Gem. afstand tot school:</b>
+        </td>
+        <td>%.1fkm</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Aantal scholen binnen 3km:</b>
+        </td>
+        <td>%.1f</td>
+    </tr>
+</table>

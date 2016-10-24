@@ -11,6 +11,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -78,14 +79,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         });
 
-        fragments = new StatsFragment[1];
+        fragments = new StatsFragment[2];
         fragments[0] = new DemographicsFragment();
+        fragments[1] = new HousingFragment();
 
         FragmentManager fm = getFragmentManager();
         for(StatsFragment f : fragments) {
             fm.beginTransaction().add(R.id.stats_container, f).commit();
         }
-        updateFragment();
     }
 
     private void updateFragment() {
@@ -105,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         super.onStart();
 
         loadState();
+        updateFragment();
         Authenticator.getInstance().connectServices();
         Authenticator.getInstance().restoreSignIn();
     }
@@ -139,14 +141,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private void saveState() {
         SharedPreferences.Editor editor = getSharedPreferences("storage", MODE_PRIVATE).edit();
         editor.putInt("currentFragment", currentFragment);
+        editor.putFloat("currentLatitude", (float) lastLocation.getLatitude());
+        editor.putFloat("currentLongitude", (float) lastLocation.getLongitude());
         editor.putString("data", currentData.toString());
         editor.apply();
-
     }
 
     private void loadState() {
         SharedPreferences prefs = getSharedPreferences("storage", MODE_PRIVATE);
         currentFragment = prefs.getInt("currentFragment", 0);
+
+        float lat = prefs.getFloat("currentLatitude", 52.3f);
+        float lon = prefs.getFloat("currentLongitude", 4.7f);
+
+        Location l = new Location("");
+        l.setLatitude(lat);
+        l.setLongitude(lon);
+        lastLocation = l;
 
         try {
             currentData = new JSONObject(prefs.getString("data", null));
