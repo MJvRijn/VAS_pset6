@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout.addDrawerListener(abdt);
         abdt.syncState();
 
-        String[] pages = {"Bevolking", "Wonen"};
+        String[] pages = {"Bevolking", "Wonen", "Geld", "Overig"};
         drawer.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_adapter, pages));
 
         drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -86,9 +86,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        fragments = new StatsFragment[2];
-        fragments[0] = new DemographicsFragment();
-        fragments[1] = new HousingFragment();
+        fragments = new StatsFragment[]{new DemographicsFragment(), new HousingFragment(),
+                new MoneyFragment(), new MiscFragment()};
 
         FragmentManager fm = getFragmentManager();
         for(StatsFragment f : fragments) {

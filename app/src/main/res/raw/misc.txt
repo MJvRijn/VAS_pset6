@@ -1,0 +1,93 @@
+<h2>Voertuigen</h2>
+
+<table>
+    <tr>
+        <td>
+            <b>Personenauto's:</b>
+        </td>
+        <td>%d</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>
+            <b>Per inwoner:</b>
+        </td>
+        <td>%.1f</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>
+            <b>Per huishouden:</b>
+        </td>
+        <td>%.1f</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>
+            <b>Jonger dan 6 jaar:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Ouder dan 6 jaar:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Benzine:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Overige brandstof:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Bestelbusjes:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.3f per inwoner)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Motoren:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.3f per inwoner)</td>
+    </tr>
+</table>
+
+<h2>Overig</h2>
+
+<table>
+    <tr>
+        <td>
+            <b>Oppervlakte:</b>
+        </td>
+        <td>%dkm²</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>
+            <b>Land:</b>
+        </td>
+        <td>%dkm²</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Water:</b>
+        </td>
+        <td>%dkm²</td>
+        <td>(%.1f%%)</td>
+    </tr>
+</table>

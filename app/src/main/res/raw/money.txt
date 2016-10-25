@@ -1,0 +1,79 @@
+<h2>Inkomen</h2>
+
+<table>
+    <tr>
+        <td>
+            <b>Inkomensontvangers:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>Gem. Jaarinkomen:</b>
+        </td>
+        <td>€%.0f</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>
+            <b>Laagste 40%% (personen):</b>
+        </td>
+        <td>%d%%</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>
+            <b>Hoogste 20%% (personen):</b>
+        </td>
+        <td>%d%%</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>
+            <b>Laagste 40%% (huishoudens):</b>
+        </td>
+        <td>%d%%</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>
+            <b>Hoogste 20%% (huishoudens):</b>
+        </td>
+        <td>%d%%</td>
+        <td></td>
+    </tr>
+</table>
+
+<h2>Uitkeringen</h2>
+
+<table>
+    <tr>
+        <td>
+            <b>Bijstand:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>AO:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>WW:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+    <tr>
+        <td>
+            <b>AOW:</b>
+        </td>
+        <td>%d</td>
+        <td>(%.1f%%)</td>
+    </tr>
+</table>
