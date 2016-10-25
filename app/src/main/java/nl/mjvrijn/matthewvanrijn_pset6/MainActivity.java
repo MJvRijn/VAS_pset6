@@ -1,12 +1,17 @@
 package nl.mjvrijn.matthewvanrijn_pset6;
 
+import android.*;
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.app.FragmentManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +23,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -105,19 +111,8 @@ public class MainActivity extends AppCompatActivity {
                     public void onConnected(@Nullable Bundle bundle) {
                         Log.i(TAG, "Connected to google location API.");
 
-                        LocationRequest locReq = LocationRequest.create();
-                        locReq.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-                        locReq.setInterval(100);
-
-                        try { //todo: request permission
-                            LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locReq, new LocationListener() {
-                                @Override
-                                public void onLocationChanged(Location l) {
-                                    processLocationUpdate(l);
-                                }
-                            });
-                        } catch(SecurityException e) {
-                            e.printStackTrace();
+                        if(checkPermission()) {
+                            requestLocationUpdates();
                         }
                     }
 
@@ -139,6 +134,46 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 fm.beginTransaction().hide(fragments[i]).commit();
             }
+        }
+    }
+
+    private boolean checkPermission() {
+        if(ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        if(requestCode == 1 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            requestLocationUpdates();
+        } else {
+            Toast.makeText(this, "This app needs to access your location to work.", Toast.LENGTH_LONG);
+        }
+
+        //super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void requestLocationUpdates() {
+        LocationRequest locReq = LocationRequest.create();
+        locReq.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        locReq.setInterval(100);
+
+        try {
+            LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locReq, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location l) {
+                    processLocationUpdate(l);
+                }
+            });
+            Log.d(TAG, "Updates Requested");
+        } catch(SecurityException e) {
+            e.printStackTrace();
         }
     }
 
@@ -184,12 +219,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveState() {
-        SharedPreferences.Editor editor = getSharedPreferences("storage", MODE_PRIVATE).edit();
-        editor.putInt("currentFragment", currentFragment);
-        editor.putFloat("currentLatitude", (float) lastLocation.getLatitude());
-        editor.putFloat("currentLongitude", (float) lastLocation.getLongitude());
-        editor.putString("data", currentData.toString());
-        editor.apply();
+        if(currentData != null) {
+            SharedPreferences.Editor editor = getSharedPreferences("storage", MODE_PRIVATE).edit();
+            editor.putInt("currentFragment", currentFragment);
+            editor.putFloat("currentLatitude", (float) lastLocation.getLatitude());
+            editor.putFloat("currentLongitude", (float) lastLocation.getLongitude());
+            editor.putString("data", currentData.toString());
+            editor.apply();
+        }
     }
 
     private void loadState() {
@@ -208,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
             currentData = new JSONObject(prefs.getString("data", null));
             updateData();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.i(TAG, "No saved state to load.");
         }
 
     }

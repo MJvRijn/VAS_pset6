@@ -17,6 +17,8 @@ import java.util.Map;
  */
 
 public class APIManager {
+    private static final String TAG = "APIManager";
+
     private APIListener callback;
     private boolean locked;
 
