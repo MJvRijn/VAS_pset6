@@ -1,17 +1,17 @@
 package nl.mjvrijn.matthewvanrijn_pset6;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.Auth;
@@ -22,10 +22,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
-import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -33,8 +31,12 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import org.w3c.dom.Text;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -47,6 +49,12 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
     private SignInButton signInButton;
     private Button signOutButton;
+    private TextView textView;
+    private CheckBox syncCheckBox;
+    private Spinner gpsSpinner;
+    private long gpsSpinnerPosition;
+
+    private boolean settingsLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,9 +70,27 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
         signInButton = (SignInButton) findViewById(R.id.settings_sign_in);
         signOutButton = (Button) findViewById(R.id.settings_sign_out);
+        syncCheckBox = (CheckBox) findViewById(R.id.sync_setting) ;
+        textView = (TextView) findViewById(R.id.settings_login_text);
+        gpsSpinner = (Spinner) findViewById(R.id.loc_accuracy_select);
 
         signInButton.setOnClickListener(this);
         signOutButton.setOnClickListener(this);
+        syncCheckBox.setOnClickListener(this);
+        gpsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(settingsLoaded) {
+                    gpsSpinnerPosition = position;
+                    writeSettingsToFirebase();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         updateSettings();
     }
@@ -163,6 +189,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
                         if (!task.isSuccessful()) {
                             Log.w(TAG, "Firebase error: ", task.getException());
+                        } else {
+                            readSettingsFromFirebase();
                         }
                     }
                 });
@@ -207,33 +235,75 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-
-
     private void updateSettings() {
-        TextView textView = (TextView) findViewById(R.id.settings_login_text);
-        SignInButton signInButton = (SignInButton) findViewById(R.id.settings_sign_in);
-        Button signOutButton = (Button) findViewById(R.id.settings_sign_out);
-
-
         if(acct == null) {
             signInButton.setVisibility(View.VISIBLE);
             signOutButton.setVisibility(View.GONE);
-            textView.setText("Not signed in");
+            syncCheckBox.setVisibility(View.GONE);
+            findViewById(R.id.gps_setting_layout).setVisibility(View.GONE);
+            findViewById(R.id.settings_loading).setVisibility(View.GONE);
+            textView.setText("Please sign in to change settings");
         } else {
             signInButton.setVisibility(View.GONE);
             signOutButton.setVisibility(View.VISIBLE);
             textView.setText("Signed in as " + acct.getDisplayName());
+            if(settingsLoaded) {
+                syncCheckBox.setVisibility(View.VISIBLE);
+                findViewById(R.id.gps_setting_layout).setVisibility(View.VISIBLE);
+                findViewById(R.id.settings_loading).setVisibility(View.GONE);
+            } else {
+                syncCheckBox.setVisibility(View.GONE);
+                findViewById(R.id.gps_setting_layout).setVisibility(View.GONE);
+                findViewById(R.id.settings_loading).setVisibility(View.VISIBLE);
+            }
         }
+    }
+
+    private void writeSettingsToFirebase() {
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+        Long gps = gpsSpinnerPosition;
+        Log.d(TAG, "pos:" + gps);
+        Boolean syncSettings = syncCheckBox.isChecked();
+
+        db.child("UserData").child(acct.getId()).child("sync").setValue(syncSettings);
+
+        if(syncSettings) {
+            db.child("UserData").child(acct.getId()).child("GPS").setValue(gps);
+        }
+    }
+
+    private void readSettingsFromFirebase() {
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+
+        db.child("UserData").child(acct.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "FB response");
+                gpsSpinnerPosition = (long) dataSnapshot.child("GPS").getValue();
+                gpsSpinner.setSelection((int) gpsSpinnerPosition);
+
+                syncCheckBox.setChecked((boolean) dataSnapshot.child("sync").getValue());
+
+                settingsLoaded = true;
+                updateSettings();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
     public void onClick(View v) {
-        if(v.getId() == R.id.settings_sign_in) {
-            signInGoogle();
-        } else if(v.getId() == R.id.settings_sign_out) {
-            signOutGoogle();
+        switch(v.getId()) {
+            case R.id.settings_sign_in:     signInGoogle();
+                                            break;
+            case R.id.settings_sign_out:    signOutGoogle();
+                                            break;
+            case R.id.sync_setting:         writeSettingsToFirebase();
+                                            break;
         }
     }
-
-
 }

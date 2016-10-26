@@ -9,8 +9,8 @@
 
     <string name="settings_loc_accuracy_prompt">Location accuracy:</string>
     <string-array name="settings_loc_accuracy_text">
-        <item>High</item>
-        <item>Medium</item>
         <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
     </string-array>
 </resources>

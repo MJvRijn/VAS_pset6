@@ -9,28 +9,41 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:gravity="center_horizontal"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="nl.mjvrijn.matthewvanrijn_pset6.SettingsActivity"
     tools:showIn="@layout/activity_settings">
 
-    <CheckBox
-        android:id="@+id/sync_setting"
-        android:layout_alignParentTop="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Synchronise settings between devices"/>
-
-    <Spinner
-        android:id="@+id/loc_accuracy_select"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/sync_setting"
-        android:entries="@array/settings_loc_accuracy_text"
-        android:prompt="@string/settings_loc_accuracy_prompt"/>
 
     <LinearLayout
+        android:id="@+id/gps_setting_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GPS accuracy:"/>
+
+        <Spinner
+            android:id="@+id/loc_accuracy_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/settings_loc_accuracy_text"
+            android:prompt="@string/settings_loc_accuracy_prompt"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/settings_loading"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="Loading Settings..."/>
+
+    <LinearLayout
+        android:id="@+id/login_container"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_alignParentBottom="true"
@@ -56,8 +69,12 @@
 
     </LinearLayout>
 
-
-
-
+    <CheckBox
+        android:id="@+id/sync_setting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="Synchronise settings between devices"
+        android:layout_above="@id/login_container"/>
 
 </RelativeLayout>
