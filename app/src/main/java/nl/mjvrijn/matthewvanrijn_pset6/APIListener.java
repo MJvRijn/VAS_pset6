@@ -2,10 +2,11 @@ package nl.mjvrijn.matthewvanrijn_pset6;
 
 import org.json.JSONObject;
 
-/**
- * Created by matthew on 21-10-16.
+/* APIListener
+ *
+ * Provide a callback interface for the APIManager.
  */
 
 public interface APIListener {
-    public void onAPIResult(JSONObject b);
+    void onAPIResult(JSONObject b);
 }

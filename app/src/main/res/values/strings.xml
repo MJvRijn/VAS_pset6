@@ -5,9 +5,13 @@
     <string name="open_drawer">Open navigation drawer</string>
     <string name="close_drawer">Close navigation drawer</string>
 
-    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="loc_permission_refused">This app needs to access your location to work</string>
+
+    <string name="title_activity_settings">Settings</string>
 
     <string name="settings_loc_accuracy_prompt">Location accuracy:</string>
+    <string name="settings_sign_in_prompt">Please sign in to change settings</string>
+    <string name="settings_signed_in">Signed in as %s</string>
     <string-array name="settings_loc_accuracy_text">
         <item>Low</item>
         <item>Medium</item>

@@ -12,73 +12,72 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Created by matthew on 21-10-16.
+/* APIManager
+ *
+ * The APIManager contains the API communication task. The task will first query an API to translate
+ * the coordinates into a CBS neighbourhood id, for which it will then get stats from the CBS API.
+ * When complete is calls onAPIResult in the provided listener.
  */
 
 public class APIManager {
-    private static final String TAG = "APIManager";
 
     private APIListener callback;
-    private boolean locked;
 
-    public APIManager() {
-        locked = false;
+    /* Get a JSONObject of stats for a location.
+     */
+    public void getStatsfromLocation(Location l, APIListener c) {
+        callback = c;
+        new APITask().execute(l.getLatitude(), l.getLongitude());
     }
 
-    public void getBuurtfromLocation(Location l, APIListener c) {
-        if(!locked) {
-            callback = c;
-            locked = true;
-            new APITask().execute(l.getLatitude(), l.getLongitude());
-        } else {
-            // todo: throw exception?
-        }
-    }
-
+    /* The API task described in the header.
+     */
     private class APITask extends AsyncTask<Double, String, Integer> {
+
         private static final String GEO_API = "https://mjvrijn.nl/api/buurt.php?lat=%f&lon=%f";
         private static final String CBS_API = "http://opendata.cbs.nl/ODataApi/odata/%s/TypedDataSet?$filter=WijkenEnBuurten+eq+'%s'";
         private static final String ID_2016 = "83487NED";
         private static final String ID_2015 = "83220NED";
         private static final String ID_2014 = "82931NED";
 
-        private static final String TAG = "APIManager";
+        private static final String TAG = "APITask";
 
         private JSONObject result;
 
+        /* The background task requests and parses the responses from the server. It returns 0 if
+         * successful and 1 if an error has occurred.
+         */
         @Override
         protected Integer doInBackground(Double... params) {
             double latitude = params[0];
             double longitude = params[1];
 
-            /* Get data from API 1 */
+            // Get the CBS buurt info from the geolocator API.
             String geolocator_url = String.format(Locale.ENGLISH, GEO_API, latitude, longitude);
-
             JSONObject geolocator = Utils.getJsonFromServer(geolocator_url, Utils.MODE_GEO);
 
             if(geolocator == null) {
                 return 1;
             } else {
-                /* Get data from API 2 */
-                String url_2016;
-                String url_2015;
-                String url_2014;
+                // Create CBS API request URLs from GEO API response
+                String[] urls;
 
                 try {
-                    url_2016 = String.format(CBS_API, ID_2016, geolocator.getString("id_2016"));
-                    url_2015 = String.format(CBS_API, ID_2015, geolocator.getString("id_2015"));
-                    url_2014 = String.format(CBS_API, ID_2014, geolocator.getString("id_2014"));
+                    urls = new String[]{
+                               String.format(CBS_API, ID_2016, geolocator.getString("id_2016")),
+                               String.format(CBS_API, ID_2015, geolocator.getString("id_2015")),
+                               String.format(CBS_API, ID_2014, geolocator.getString("id_2014"))};
                 } catch (JSONException e) {
                     Log.e(TAG, "The JSON received from the geo api is incomplete");
                     return 1;
                 }
 
-                JSONObject json_2016 = Utils.getJsonFromServer(url_2016, Utils.MODE_CBS);
-                JSONObject json_2015 = Utils.getJsonFromServer(url_2015, Utils.MODE_CBS);
-                JSONObject json_2014 = Utils.getJsonFromServer(url_2014, Utils.MODE_CBS);
+                // Get the CBS API response
+                JSONObject json_2016 = Utils.getJsonFromServer(urls[0], Utils.MODE_CBS);
+                JSONObject json_2015 = Utils.getJsonFromServer(urls[1], Utils.MODE_CBS);
+                JSONObject json_2014 = Utils.getJsonFromServer(urls[2], Utils.MODE_CBS);
 
-                /* Merge JSONObjects */
+                // Merge the three years of data into one json object
                 Iterator<String> iterator2016 = json_2016.keys();
                 Map<String, String> replacements = new HashMap<>();
 
@@ -133,6 +132,8 @@ public class APIManager {
                 }
 
                 result = json_2016;
+
+                // Add the neighbourhood name and city from the GEO API to the result
                 try {
                     result.put("name", geolocator.getString("name"));
                     result.put("city", geolocator.getString("city"));
@@ -145,18 +146,15 @@ public class APIManager {
             return 0;
         }
 
+        /* After the task is complete call the callback function.
+         */
         @Override
         protected void onPostExecute(Integer integer) {
             super.onPostExecute(integer);
 
-            locked = false;
-
             if(integer == 0) {
-                Log.d(TAG, result.toString());
                 callback.onAPIResult(result);
             }
-
         }
     }
-
 }
