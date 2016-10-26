@@ -48,7 +48,7 @@ public class MiscFragment extends StatsFragment {
                     json.getInt("OppervlakteLand_101"),
                     (double) json.getInt("OppervlakteLand_101") / json.getInt("OppervlakteTotaal_100") * 100,
                     json.getInt("OppervlakteWater_102"),
-                    (double) json.getInt("OppervlakteWater_102") / json.getInt("OppervlakteTotaal_100") * 10
+                    (double) json.getInt("OppervlakteWater_102") / json.getInt("OppervlakteTotaal_100") * 100
             );
         } catch (JSONException e) {
             e.printStackTrace();
